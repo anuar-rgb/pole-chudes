@@ -26,7 +26,7 @@ export function WheelPlayground() {
   const wheel: Wheel = useMemo(() => {
     const base = PRESET_WHEELS.find((w) => w.id === wheelId)!;
     const sized = base.id === 'wheel_classic' ? { ...base, sections: buildClassicSections(count, theme.sectionPalette) } : base;
-    const themed = applyThemeToWheel(sized, theme, base.id === 'wheel_classic');
+    const themed = applyThemeToWheel(sized, theme);
     return { ...themed, style: { ...themed.style, labelOrientation: orientation } };
   }, [wheelId, count, theme, orientation]);
 

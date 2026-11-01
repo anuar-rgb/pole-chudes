@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Dices, Eye, EyeOff, Gift, Lightbulb, LogOut, MessageSquareText, SkipForward, Trophy } from 'lucide-react';
 import type { Theme, Wheel } from '@/types/game';
 import { selectQuestion, useGameStore } from '@/store/gameStore';
+import { useDataStore } from '@/store/dataStore';
 import { useGameLogic } from '@/hooks/useGameLogic';
 import { WheelCanvas } from './WheelCanvas';
 import { WordBoard } from './WordBoard';
@@ -24,7 +25,7 @@ export function GameScreen({ wheel, theme, soundOn }: { wheel: Wheel; theme: The
     soundOn,
   );
   const question = useGameStore(selectQuestion);
-  const category = useGameStore((s) => s.categories.find((c) => c.id === question?.categoryId));
+  const category = useDataStore((s) => s.categories.find((c) => c.id === question?.categoryId));
   const exit = useGameStore((s) => s.exit);
   const start = useGameStore((s) => s.start);
 
@@ -74,6 +75,7 @@ export function GameScreen({ wheel, theme, soundOn }: { wheel: Wheel; theme: The
             )}
             <div className="min-w-0">
               <p className="text-lg font-semibold leading-snug sm:text-xl">{question?.prompt}</p>
+              {question?.audio && <audio key={question.id} controls src={question.audio} className="mt-2 h-9 w-full max-w-xs" />}
               {game.hintShown && question?.hint && (
                 <p className="pop-in mt-2 flex items-start gap-2 text-[var(--c-muted)]">
                   <Lightbulb size={18} className="mt-0.5 shrink-0 text-[var(--c-accent)]" /> {question.hint}

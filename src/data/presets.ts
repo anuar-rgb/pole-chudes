@@ -76,6 +76,7 @@ export const CLASSIC_WHEEL: Wheel = {
   sections: buildClassicSections(16, CLASSIC_PALETTE),
   style: DEFAULT_WHEEL_STYLE,
   physics: DEFAULT_PHYSICS,
+  followTheme: true,
 };
 
 export const GALLERY_WHEEL: Wheel = {

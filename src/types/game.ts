@@ -111,6 +111,11 @@ export interface Wheel {
   sections: WheelSection[];
   style: WheelStyle;
   physics: SpinPhysics;
+  /**
+   * true — стиль обода/стрелки берётся из темы, а очковые секторы без картинок
+   * перекрашиваются в палитру темы. false — барабан всегда выглядит как задано в конструкторе.
+   */
+  followTheme?: boolean;
   createdAt?: ISODate;
   updatedAt?: ISODate;
 }
@@ -139,6 +144,8 @@ export interface Category {
   coverImage?: MediaUrl;
   /** Тема оформления по умолчанию для категории */
   themeId?: ID;
+  createdAt?: ISODate;
+  updatedAt?: ISODate;
 }
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
@@ -158,6 +165,7 @@ export interface Question {
   /** Барабан, который используется для этого вопроса (иначе — барабан игры) */
   wheelId?: ID;
   createdAt?: ISODate;
+  updatedAt?: ISODate;
 }
 
 /* ============================================================
@@ -200,6 +208,8 @@ export interface Theme {
   /** Звуковая тема; отсутствующие ключи — синтезированные звуки по умолчанию */
   sounds?: Partial<Record<SoundKey, MediaUrl>>;
   borderRadius: number; // px
+  createdAt?: ISODate;
+  updatedAt?: ISODate;
 }
 
 /* ============================================================

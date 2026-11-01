@@ -1,10 +1,10 @@
 import { create } from 'zustand';
-import type { Category, GameSettings, GameState, Question } from '@/types/game';
+import type { GameSettings, GameState, Question } from '@/types/game';
 import { createGame, gameReducer, type GameAction, type PlayerDraft } from '@/utils/gameLogic';
-import { DEMO_CATEGORIES, DEMO_QUESTIONS } from '@/data/questions';
+import { useDataStore } from './dataStore';
 
 interface GameStore {
-  categories: Category[];
+  /** Снимок вопросов на момент старта — правки в админке не ломают идущую партию */
   questions: Question[];
   game: GameState | null;
   error: string | null;
@@ -14,14 +14,14 @@ interface GameStore {
 }
 
 export const useGameStore = create<GameStore>()((set, get) => ({
-  categories: DEMO_CATEGORIES,
-  questions: DEMO_QUESTIONS,
+  questions: [],
   game: null,
   error: null,
 
   start(settings, players) {
+    const questions = useDataStore.getState().questions;
     try {
-      set({ game: createGame(settings, players, get().questions), error: null });
+      set({ game: createGame(settings, players, questions), questions, error: null });
     } catch (e) {
       set({ error: (e as Error).message });
     }

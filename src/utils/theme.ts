@@ -27,12 +27,12 @@ export function applyThemeCss(theme: Theme, root: HTMLElement = document.documen
 }
 
 /**
- * Применяет тему к барабану: сливает стиль и перекрашивает очковые секторы
+ * Применяет тему к барабану с followTheme: сливает стиль и перекрашивает очковые секторы
  * без собственной картинки в палитру темы. Спец-секторы сохраняют свои цвета.
  */
-export function applyThemeToWheel(wheel: Wheel, theme: Theme, recolor = true): Wheel {
+export function applyThemeToWheel(wheel: Wheel, theme: Theme): Wheel {
+  if (!wheel.followTheme) return wheel;
   const style = { ...wheel.style, ...theme.wheelStyle };
-  if (!recolor) return { ...wheel, style };
 
   const palette = theme.sectionPalette;
   const colorOf = (s: Wheel['sections'][number]) => (s.fill.kind === 'solid' ? s.fill.color : s.fill.to);

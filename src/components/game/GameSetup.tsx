@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Bot, Minus, Play, Plus, Timer, User } from 'lucide-react';
 import type { BotLevel, GameMode, GameSettings } from '@/types/game';
-import { PRESET_THEMES, PRESET_WHEELS } from '@/data/presets';
+import { useDataStore } from '@/store/dataStore';
 import { RU_ALPHABET, type PlayerDraft } from '@/utils/gameLogic';
 import { useGameStore } from '@/store/gameStore';
 import { Button } from '@/components/ui/Button';
@@ -57,8 +57,8 @@ function initial(): SetupState {
   return {
     settings: {
       mode: 'vsBot',
-      wheelId: PRESET_WHEELS[0].id,
-      themeId: PRESET_THEMES[0].id,
+      wheelId: '',
+      themeId: '',
       categoryIds: [],
       rounds: 3,
       turnTimer: { enabled: false, seconds: 30 },
@@ -72,13 +72,21 @@ function initial(): SetupState {
 }
 
 export function GameSetup({ onThemePreview }: { onThemePreview: (themeId: string) => void }) {
-  const categories = useGameStore((s) => s.categories);
-  const questions = useGameStore((s) => s.questions);
+  const { wheels, themes, categories, questions } = useDataStore();
   const start = useGameStore((s) => s.start);
   const error = useGameStore((s) => s.error);
-  const [{ settings, players }, setState] = useState<SetupState>(initial);
+  const [state, setState] = useState<SetupState>(initial);
+  const { players } = state;
 
-  const set = (patch: Partial<GameSettings>) => setState((s) => ({ ...s, settings: { ...s.settings, ...patch } }));
+  // Сохранённые настройки могли ссылаться на удалённые в админке барабан/тему/категории
+  const settings: GameSettings = {
+    ...state.settings,
+    wheelId: wheels.some((w) => w.id === state.settings.wheelId) ? state.settings.wheelId : wheels[0]?.id ?? '',
+    themeId: themes.some((t) => t.id === state.settings.themeId) ? state.settings.themeId : themes[0]?.id ?? '',
+    categoryIds: state.settings.categoryIds.filter((id) => categories.some((c) => c.id === id)),
+  };
+
+  const set = (patch: Partial<GameSettings>) => setState((s) => ({ ...s, settings: { ...settings, ...patch } }));
   const setPlayers = (fn: (p: PlayerDraft[]) => PlayerDraft[]) => setState((s) => ({ ...s, players: fn(s.players) }));
 
   useEffect(() => onThemePreview(settings.themeId), [settings.themeId, onThemePreview]);
@@ -238,7 +246,7 @@ export function GameSetup({ onThemePreview }: { onThemePreview: (themeId: string
           <label className="flex flex-col gap-1.5 text-sm">
             <span className="text-[var(--c-muted)]">Барабан</span>
             <select className={inputCls} value={settings.wheelId} onChange={(e) => set({ wheelId: e.target.value })}>
-              {PRESET_WHEELS.map((w) => (
+              {wheels.map((w) => (
                 <option key={w.id} value={w.id}>
                   {w.name}
                 </option>
@@ -248,7 +256,7 @@ export function GameSetup({ onThemePreview }: { onThemePreview: (themeId: string
           <label className="flex flex-col gap-1.5 text-sm">
             <span className="text-[var(--c-muted)]">Оформление</span>
             <select className={inputCls} value={settings.themeId} onChange={(e) => set({ themeId: e.target.value })}>
-              {PRESET_THEMES.map((t) => (
+              {themes.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
                 </option>
