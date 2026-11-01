@@ -1,0 +1,123 @@
+@import 'tailwindcss';
+
+:root {
+  --c-bg: #1a0f3d;
+  --c-surface: #2a1a5e;
+  --c-surface-alt: #3b2a7a;
+  --c-text: #fff8e7;
+  --c-muted: #c7b8f0;
+  --c-accent: #f59e0b;
+  --c-accent-text: #1a0f3d;
+  --c-tile-back: #1d4ed8;
+  --c-tile-front: #fffbeb;
+  --c-tile-text: #1a0f3d;
+  --c-danger: #ef4444;
+  --c-success: #22c55e;
+  --font-body: Rubik, system-ui, sans-serif;
+  --font-heading: Rubik, system-ui, sans-serif;
+  --radius: 14px;
+  --bg-image: none;
+  --bg-overlay: #1a0f3d;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--c-bg);
+  background-image: var(--bg-image), var(--bg-overlay);
+  background-size: cover;
+  background-attachment: fixed;
+  color: var(--c-text);
+  font-family: var(--font-body);
+  transition: background-color 0.4s, color 0.4s;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+}
+
+.panel {
+  background: color-mix(in srgb, var(--c-surface) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-text) 12%, transparent);
+  border-radius: var(--radius);
+  backdrop-filter: blur(6px);
+}
+
+/* ---------- Плашки табло */
+.tile {
+  perspective: 600px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-weight: 900;
+  color: var(--c-tile-text);
+}
+.tile-inner {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.3, 1.4, 0.5, 1);
+  transition-delay: var(--delay, 0ms);
+}
+.tile.is-open .tile-inner {
+  transform: rotateY(180deg);
+}
+.tile-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(var(--radius) * 0.5);
+  backface-visibility: hidden;
+  box-shadow: inset 0 -4px 0 rgb(0 0 0 / 0.25), 0 4px 10px rgb(0 0 0 / 0.3);
+}
+.tile-back {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--c-tile-back) 80%, white), var(--c-tile-back));
+  color: var(--c-tile-front);
+}
+.tile-front {
+  background: var(--c-tile-front);
+  transform: rotateY(180deg);
+}
+.tile.is-pickable {
+  cursor: pointer;
+}
+.tile.is-pickable .tile-back {
+  outline: 3px solid var(--c-accent);
+  animation: tile-pulse 1s ease-in-out infinite;
+}
+.tile.is-pickable:hover .tile-inner {
+  transform: translateY(-4px);
+}
+@keyframes tile-pulse {
+  50% {
+    outline-color: transparent;
+  }
+}
+
+/* ---------- Объявления ведущего */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+}
+.pop-in {
+  animation: pop-in 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
