@@ -174,6 +174,28 @@ export interface Question {
 
 export type SoundKey = 'spinTick' | 'correct' | 'wrong' | 'bankrupt' | 'win' | 'turn';
 
+export interface BackgroundGradient {
+  kind: 'solid' | 'linear' | 'radial';
+  from: Color;
+  to: Color;
+  /** linear: угол в градусах */
+  angle: number;
+  /** radial: центр в процентах */
+  x: number;
+  y: number;
+  /** 0..1 — непрозрачность поверх фоновой картинки */
+  opacity: number;
+}
+
+export const SOUND_LABELS: Record<SoundKey, string> = {
+  spinTick: 'Щелчок барабана',
+  correct: 'Верная буква',
+  wrong: 'Ошибка',
+  bankrupt: 'Банкрот',
+  win: 'Победа / приз',
+  turn: 'Переход хода',
+};
+
 export interface ThemeColors {
   background: Color;
   surface: Color;
@@ -200,8 +222,11 @@ export interface Theme {
   headingFontFamily?: string;
   /** Фон игрового поля */
   backgroundImage?: MediaUrl;
-  backgroundOverlay?: Color; // полупрозрачная заливка поверх фона
-  /** Переопределение стиля барабана */
+  /** Градиент поверх фоновой картинки (или вместо неё). Редактируется конструктором */
+  backgroundGradient?: BackgroundGradient;
+  /** Произвольный CSS-фон (устаревшее/продвинутое); используется, если нет backgroundGradient */
+  backgroundOverlay?: string;
+  /** Переопределение стиля барабана (цвета и шрифт подписей) */
   wheelStyle?: Partial<WheelStyle>;
   /** Палитра, из которой берутся цвета секторов при авто-раскраске */
   sectionPalette: Color[];

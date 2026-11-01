@@ -29,7 +29,8 @@ body,
 body {
   margin: 0;
   background-color: var(--c-bg);
-  background-image: var(--bg-image), var(--bg-overlay);
+  /* градиент поверх картинки: так он её тонирует */
+  background-image: var(--bg-overlay), var(--bg-image);
   background-size: cover;
   background-attachment: fixed;
   color: var(--c-text);

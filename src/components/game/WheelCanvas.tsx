@@ -3,6 +3,7 @@ import type { SpinResult, Wheel, WheelSection } from '@/types/game';
 import { SECTION_TYPE_LABELS } from '@/types/game';
 import { sectionAngle, sectionAtPointer, sectionBounds, spinEasing, START_ANGLE, TAU } from '@/utils/wheelMath';
 import { readableText, shade, withAlpha } from '@/utils/color';
+import { ensureFonts } from '@/utils/fonts';
 
 export interface WheelCanvasHandle {
   /** Анимирует барабан до result.targetRotation. Промис резолвится после полной остановки */
@@ -266,11 +267,25 @@ export const WheelCanvas = forwardRef<WheelCanvasHandle, Props>(function WheelCa
     return { scale, cx: size / 2, cy: size / 2, outer, disc: outer - rim, hub: (outer - rim) * 0.15 };
   }, [size, wheel.style.rimWidth]);
 
+  // Canvas не перерисовывается сам, когда догружается веб-шрифт, — следим за этим
+  const [fontsVersion, setFontsVersion] = useState(0);
+  useEffect(() => {
+    const fonts = document.fonts;
+    if (!fonts) return;
+    const bump = () => setFontsVersion((v) => v + 1);
+    ensureFonts(wheel.style.fontFamily);
+    // явно просим шрифт подписей, иначе браузер не начнёт его грузить ради canvas
+    void fonts.load(`900 20px ${wheel.style.fontFamily}`).then(bump, () => {});
+    fonts.addEventListener('loadingdone', bump);
+    return () => fonts.removeEventListener('loadingdone', bump);
+  }, [wheel.style.fontFamily]);
+
   const disc = useMemo(() => {
     if (!size) return null;
     const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
     return renderDisc(wheel, geom.disc, dpr, images);
-  }, [wheel, geom.disc, images, size]);
+    // fontsVersion — только триггер перерисовки
+  }, [wheel, geom.disc, images, size, fontsVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useImperativeHandle(
     ref,

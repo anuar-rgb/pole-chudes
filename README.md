@@ -14,6 +14,12 @@ npm run build && npm start   # продакшен: один процесс на 
 - `/` — игра, `/admin` — админка, `/wheel` — песочница барабана.
 - Локально админка открыта без пароля. Данные лежат в `./data` (SQLite + загрузки).
 
+## Темы оформления
+
+В админке → «Темы»: 12 цветов интерфейса с проверкой контраста (WCAG), шрифты (основной, заголовки, подписи барабана), фоновая картинка с градиентом поверх, палитра секторов, цвета барабана, свои звуки. Живое превью показывает настоящие компоненты игры. Темы можно дублировать, скачивать и загружать как JSON.
+
+Сама админка всегда во встроенном оформлении, чтобы неудачная тема не сделала её нечитаемой.
+
 ## Переменные окружения
 
 | Переменная | Зачем |
@@ -47,7 +53,8 @@ npm run build && npm start   # продакшен: один процесс на 
 - `src/utils/gameLogic.ts` — чистая логика партии `(state, action) → state`, покрыта тестами
 - `src/utils/wheelMath.ts` — углы, взвешенный выбор сектора, кривая замедления
 - `src/components/game/` — WheelCanvas, WordBoard, Keyboard, PlayerCard, GameSetup, GameScreen
-- `src/components/admin/` — WheelEditor, SectionRow, QuestionManager, AssetLibrary, AssetGallery
+- `src/components/admin/` — WheelEditor, SectionRow, QuestionManager, AssetLibrary, AssetGallery, ThemeList, ThemeEditor, ThemePreview
+- `src/utils/theme.ts`, `src/utils/fonts.ts` — движок тем: CSS-переменные, градиенты фона, каталог Google Fonts с кириллицей
 - `src/store/` — `dataStore` (контент с сервера), `gameStore` (партия)
 - `server/` — Express + SQLite (`better-sqlite3`), загрузка медиа, авторизация
 
@@ -57,4 +64,4 @@ npm run build && npm start   # продакшен: один процесс на 
 2. ✅ Движок барабана
 3. ✅ Табло и логика игры
 4. ✅ Админ-панель + API + SQLite + загрузка медиа
-5. ⬜ Редактор тем
+5. ✅ Редактор тем

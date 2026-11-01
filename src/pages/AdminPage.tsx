@@ -4,6 +4,7 @@ import { CircleDot, FileQuestion, Images, LogOut, Palette, Play, Lock } from 'lu
 import { api, authToken, type AuthMode } from '@/api/client';
 import { useDataStore } from '@/store/dataStore';
 import { applyThemeCss } from '@/utils/theme';
+import { PRESET_THEMES } from '@/data/presets';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/form';
 import { Toaster } from '@/components/ui/Toast';
@@ -11,6 +12,8 @@ import { WheelList } from '@/components/admin/WheelList';
 import { WheelEditor } from '@/components/admin/WheelEditor';
 import { QuestionManager } from '@/components/admin/QuestionManager';
 import { AssetGallery } from '@/components/admin/AssetGallery';
+import { ThemeList } from '@/components/admin/ThemeList';
+import { ThemeEditor } from '@/components/admin/ThemeEditor';
 
 type Auth = { state: 'checking' } | { state: 'offline' } | { state: 'locked' } | { state: 'login' } | { state: 'ok'; mode: AuthMode };
 
@@ -23,7 +26,7 @@ const NAV = [
 
 export function AdminPage() {
   const [auth, setAuth] = useState<Auth>({ state: 'checking' });
-  const { status, load, themes } = useDataStore();
+  const { status, load } = useDataStore();
 
   useEffect(() => {
     api
@@ -37,9 +40,9 @@ export function AdminPage() {
     if (auth.state === 'ok' && status !== 'ready' && status !== 'loading') void load();
   }, [auth.state, status, load]);
 
-  useEffect(() => {
-    if (themes[0]) applyThemeCss(themes[0]);
-  }, [themes]);
+  // Админка всегда во встроенном оформлении: неудачная правка темы в БД
+  // (например, нечитаемый текст) не должна сделать саму админку непригодной
+  useEffect(() => applyThemeCss(PRESET_THEMES[0]), []);
 
   if (auth.state !== 'ok') return <AuthScreen auth={auth} onLogin={(mode) => setAuth({ state: 'ok', mode })} />;
 
@@ -94,7 +97,8 @@ export function AdminPage() {
             <Route path="wheels" element={<WheelList />} />
             <Route path="wheels/:id" element={<WheelEditorRoute />} />
             <Route path="questions" element={<QuestionManager />} />
-            <Route path="themes" element={<ThemesStub />} />
+            <Route path="themes" element={<ThemeList />} />
+            <Route path="themes/:id" element={<ThemeEditorRoute />} />
             <Route path="assets" element={<AssetGallery />} />
             <Route path="*" element={<Navigate to="wheels" replace />} />
           </Routes>
@@ -110,28 +114,9 @@ function WheelEditorRoute() {
   return <WheelEditor wheelId={id} />;
 }
 
-function ThemesStub() {
-  const themes = useDataStore((s) => s.themes);
-  return (
-    <div>
-      <h1 className="mb-2 text-2xl font-black">Темы</h1>
-      <p className="mb-5 text-sm text-[var(--c-muted)]">Редактор тем — следующий этап. Сейчас доступны встроенные темы:</p>
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {themes.map((t) => (
-          <li key={t.id} className="overflow-hidden rounded-[var(--radius)] border border-white/10" style={{ background: t.colors.background, color: t.colors.text, fontFamily: t.fontFamily }}>
-            <div className="p-4">
-              <div className="font-bold">{t.name}</div>
-              <div className="mt-3 flex gap-1">
-                {t.sectionPalette.map((c, i) => (
-                  <span key={i} className="h-5 flex-1 rounded-sm" style={{ background: c }} />
-                ))}
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+function ThemeEditorRoute() {
+  const { id = '' } = useParams();
+  return <ThemeEditor themeId={id} />;
 }
 
 function AuthScreen({ auth, onLogin }: { auth: Auth; onLogin: (mode: AuthMode) => void }) {

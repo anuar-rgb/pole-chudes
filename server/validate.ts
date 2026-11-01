@@ -1,4 +1,4 @@
-import type { Category, Question, SectionType, Theme, Wheel, WheelSection } from '@/types/game';
+import type { BackgroundGradient, Category, Question, SectionType, Theme, Wheel, WheelSection } from '@/types/game';
 import { WHEEL_MAX_SECTIONS, WHEEL_MIN_SECTIONS } from '@/types/game';
 
 export class HttpError extends Error {
@@ -162,6 +162,19 @@ export function parseQuestion(raw: unknown, id: string, alphabet: string): Quest
   };
 }
 
+function gradient(g: Obj): BackgroundGradient {
+  const kind = g.kind === 'solid' || g.kind === 'linear' ? g.kind : 'radial';
+  return {
+    kind,
+    from: color(g, 'from')!,
+    to: color(g, 'to')!,
+    angle: num(g, 'angle', { min: 0, max: 360 })!,
+    x: num(g, 'x', { min: 0, max: 100 })!,
+    y: num(g, 'y', { min: 0, max: 100 })!,
+    opacity: num(g, 'opacity', { min: 0, max: 1 })!,
+  };
+}
+
 export function parseTheme(raw: unknown, id: string, preset: boolean): Theme {
   if (!isObj(raw)) return bad('Неверный формат темы');
   const c = isObj(raw.colors) ? raw.colors : bad('Нет цветов темы');
@@ -191,11 +204,13 @@ export function parseTheme(raw: unknown, id: string, preset: boolean): Theme {
     fontFamily: cssValue(raw, 'fontFamily', true)!,
     headingFontFamily: cssValue(raw, 'headingFontFamily'),
     backgroundImage: media(raw, 'backgroundImage'),
+    backgroundGradient: isObj(raw.backgroundGradient) ? gradient(raw.backgroundGradient) : undefined,
     backgroundOverlay: cssValue(raw, 'backgroundOverlay'),
     wheelStyle: Object.fromEntries(
-      (['rimColor', 'dividerColor', 'lightColor', 'hubColor', 'pointerColor'] as const)
-        .map((k) => [k, color(ws, k, false)])
-        .filter(([, v]) => v),
+      [
+        ...(['rimColor', 'dividerColor', 'lightColor', 'hubColor', 'pointerColor'] as const).map((k) => [k, color(ws, k, false)]),
+        ['fontFamily', cssValue(ws, 'fontFamily')],
+      ].filter(([, v]) => v),
     ),
     sectionPalette: palette.map((p, i) => color({ c: p }, 'c') ?? bad(`Палитра: цвет ${i + 1}`)),
     sounds: Object.fromEntries(soundKeys.map((k) => [k, media(sounds, k)]).filter(([, v]) => v)),

@@ -1,8 +1,29 @@
-import type { Theme, Wheel } from '@/types/game';
+import type { BackgroundGradient, Theme, Wheel } from '@/types/game';
+import { withAlpha } from './color';
+import { ensureFonts } from './fonts';
 
-/** Записывает цвета темы в CSS-переменные — Tailwind-классы вида bg-[var(--c-surface)] подхватят их */
+/** CSS для градиента фона. opacity < 1 — чтобы сквозь него была видна фоновая картинка */
+export function gradientToCss(g: BackgroundGradient): string {
+  const a = (c: string) => withAlpha(c, g.opacity);
+  if (g.kind === 'solid') return `linear-gradient(${a(g.from)}, ${a(g.from)})`;
+  if (g.kind === 'linear') return `linear-gradient(${g.angle}deg, ${a(g.from)}, ${a(g.to)})`;
+  return `radial-gradient(ellipse at ${g.x}% ${g.y}%, ${a(g.from)} 0%, ${a(g.to)} 72%)`;
+}
+
+export function themeOverlayCss(theme: Theme): string {
+  if (theme.backgroundGradient) return gradientToCss(theme.backgroundGradient);
+  // background-image принимает только image-значения, поэтому сплошной цвет оборачиваем в градиент
+  return theme.backgroundOverlay ?? `linear-gradient(${theme.colors.background}, ${theme.colors.background})`;
+}
+
+/**
+ * Записывает тему в CSS-переменные элемента (по умолчанию — <html>) и подгружает шрифты.
+ * Tailwind-классы вида bg-[var(--c-surface)] подхватят значения; превью в админке
+ * передаёт свой элемент, чтобы тема применилась только к нему.
+ */
 export function applyThemeCss(theme: Theme, root: HTMLElement = document.documentElement) {
   const c = theme.colors;
+  ensureFonts(theme.fontFamily, theme.headingFontFamily, theme.wheelStyle?.fontFamily);
   const vars: Record<string, string> = {
     '--c-bg': c.background,
     '--c-surface': c.surface,
@@ -20,15 +41,15 @@ export function applyThemeCss(theme: Theme, root: HTMLElement = document.documen
     '--font-heading': theme.headingFontFamily ?? theme.fontFamily,
     '--radius': `${theme.borderRadius}px`,
     '--bg-image': theme.backgroundImage ? `url("${theme.backgroundImage}")` : 'none',
-    // background-image принимает только image-значения, поэтому сплошной цвет оборачиваем в градиент
-    '--bg-overlay': theme.backgroundOverlay ?? `linear-gradient(${c.background}, ${c.background})`,
+    '--bg-overlay': themeOverlayCss(theme),
   };
   for (const [k, v] of Object.entries(vars)) root.style.setProperty(k, v);
 }
 
 /**
- * Применяет тему к барабану с followTheme: сливает стиль и перекрашивает очковые секторы
- * без собственной картинки в палитру темы. Спец-секторы сохраняют свои цвета.
+ * Применяет тему к барабану с followTheme: сливает стиль (цвета, шрифт подписей)
+ * и перекрашивает очковые секторы без собственной картинки в палитру темы.
+ * Спец-секторы сохраняют свои цвета.
  */
 export function applyThemeToWheel(wheel: Wheel, theme: Theme): Wheel {
   if (!wheel.followTheme) return wheel;
